@@ -113,11 +113,22 @@ class OUGC_SimilarThreads_Enhancement
 		// Run/Add Hooks
 		if(!defined('IN_ADMINCP'))
 		{
-			global $plugins;
+			global $plugins, $templatelist;
 
 			$plugins->add_hook('showthread_start', array($this, 'hook_showthread_start'));
 			$plugins->add_hook('forumdisplay_get_threads', array($this, 'hook_forumdisplay_get_threads'));
 			$plugins->add_hook('forumdisplay_thread', array($this, 'hook_forumdisplay_thread'));
+
+			if(isset($templatelist))
+			{
+				$templatelist .= ',';
+			}
+			else
+			{
+				$templatelist = '';
+			}
+
+			$templatelist .= 'forumdisplay_thread_image,showthread_similarthreads_bit_image';
 		}
 	}
 
@@ -285,7 +296,7 @@ class OUGC_SimilarThreads_Enhancement
 	{
 		global $thread;
 
-		$this->get_post_image($thread);
+		$this->get_post_image($thread, 'forum');
 	}
 
 	// Run hack
@@ -317,7 +328,7 @@ class OUGC_SimilarThreads_Enhancement
 					xthreads_sanitize_disp($thread['threadfields'][$k], $v, ($thread['username'] !== '' ? $thread['username'] : $thread['threadusername']));
 				}
 			}
-			// template hack
+			/*// template hack
 			$tplprefix =& $forum_tpl_prefixes[$thread['fid']];
 
 			require_once MYBB_ROOT.'inc\xthreads\xt_mischooks.php';
@@ -333,14 +344,14 @@ class OUGC_SimilarThreads_Enhancement
 					// re-evaluate comments template
 					eval('$GLOBALS[\'icon\'] = "'.$GLOBALS['templates']->get($tplname).'";');
 				}
-			}
+			}*/
 		}
 
 		$this->get_post_image($thread);
 	}
 
 	// Get first post image for thread
-	function get_post_image(&$thread)
+	function get_post_image(&$thread, $type='thread')
 	{
 		global $parser;
 
@@ -363,6 +374,13 @@ class OUGC_SimilarThreads_Enhancement
 		}
 
 		$thread['post']['image'] = $matches[0][0];
+
+		$tmpl = $type == 'forum' ? 'forumdisplay_thread_image' : 'showthread_similarthreads_bit_image';
+
+		if(isset($templates->cache[$tmpl]))
+		{
+			$thread['post']['image'] = eval($templates->render($tmpl));
+		}
 	}
 }
 
