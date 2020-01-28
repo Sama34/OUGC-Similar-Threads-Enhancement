@@ -138,12 +138,13 @@ class OUGC_SimilarThreads_Enhancement
 		return array(
 			'name'			=> 'OUGC Similar Threads Enhancement',
 			'description'	=> 'Allows you to display the first image of a thread in the similar threads box in show threads page plus xThreads fields if installed.',
-			'website'		=> 'http://omarg.me',
+			'website'		=> 'https://ougc.network',
 			'author'		=> 'Omar G.',
-			'authorsite'	=> 'http://omarg.me',
-			'version'		=> '1.0',
-			'versioncode'	=> 1000,
-			'compatibility'	=> '18*'
+			'authorsite'	=> 'https://ougc.network',
+			'version'		=> '1.8.22',
+			'versioncode'	=> 1822,
+			'compatibility'	=> '18*',
+			'codename'		=> 'ougc_similarthreads'
 		);
 	}
 
@@ -302,6 +303,7 @@ class OUGC_SimilarThreads_Enhancement
 	// Run hack
 	function run_thread(&$thread)
 	{
+		//_dump(1, $thread);
 		if(function_exists('xthreads_gettfcache'))
 		{
 			global $threadfield_cache, $forum_tpl_prefixes;
@@ -345,6 +347,7 @@ class OUGC_SimilarThreads_Enhancement
 					eval('$GLOBALS[\'icon\'] = "'.$GLOBALS['templates']->get($tplname).'";');
 				}
 			}*/
+			xthreads_get_threadfields($thread['tid'], $thread['threadfields'], false, $thread);
 		}
 
 		$this->get_post_image($thread);
@@ -374,6 +377,8 @@ class OUGC_SimilarThreads_Enhancement
 		}
 
 		$thread['post']['image'] = $matches[0][0];
+
+		$thread['post']['image_url'] = $matches[2][0];
 
 		$tmpl = $type == 'forum' ? 'forumdisplay_thread_image' : 'showthread_similarthreads_bit_image';
 
