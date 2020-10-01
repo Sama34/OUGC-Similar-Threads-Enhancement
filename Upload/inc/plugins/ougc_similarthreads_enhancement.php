@@ -272,19 +272,32 @@ class OUGC_SimilarThreads_Enhancement
 	// Hook: forumdisplay_get_threads
 	function hook_forumdisplay_get_threads()
 	{
+		global $db;
 
-		control_object($GLOBALS['db'], '
+		control_object($db, '
 			function query($string, $hide_errors=0, $write_query=0)
 			{
 				static $done = false;
 				if(!$done && !$write_query && strpos($string, \'t.username AS threadusername, u.username\'))
 				{
 					$done = true;
-					$string = strtr($string, array(
-						\'t.username AS threadusername, u.username\' => \'t.username AS threadusername, u.username, p.message\',
-						\'FROM '.TABLE_PREFIX.'threads t\' => \'FROM '.TABLE_PREFIX.'threads t
-		LEFT JOIN '.TABLE_PREFIX.'posts p ON (p.pid=t.firstpost)\'
-					));
+
+					$replaces = [];
+
+					if(my_strpos($string, "p.message") === false)
+					{
+						$replaces["t.username AS threadusername, u.username"] = "t.username AS threadusername, u.username, p.message";
+					}
+
+					if(my_strpos($string, "posts p ON") === false)
+					{
+						$replaces["FROM '.$db->table_prefix.'threads t"] = "FROM '.$db->table_prefix.'threads t LEFT JOIN '.$db->table_prefix.'posts p ON (p.pid=t.firstpost)";
+					}
+
+					if($replaces)
+					{
+						$string = strtr($string, $replaces);
+					}
 				}
 
 				return parent::query($string, $hide_errors, $write_query);
